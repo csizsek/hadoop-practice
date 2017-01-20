@@ -1,0 +1,84 @@
+# try if hadoop is installed:
+bin/hadoop
+
+
+# try an example job:
+mkdir input
+cp etc/hadoop/*.xml input
+bin/hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.2.jar grep input output 'dfs[a-z.]+'
+cat output/*
+
+
+# example local etc/hadoop/core-site.xml:
+<configuration>
+    <property>
+        <name>fs.defaultFS</name>
+        <value>hdfs://localhost:9000</value>
+    </property>
+</configuration>
+
+
+# example etc/hadoop/hdfs-site.xml:
+<configuration>
+    <property>
+        <name>dfs.replication</name>
+        <value>1</value>
+    </property>
+</configuration>
+
+
+# format HDFS:
+bin/hdfs namenode -format
+
+
+# start NameNode and DataNode daemons:
+sbin/start-dfs.sh
+
+
+# stop them:
+sbin/stop-dfs.sh
+
+
+# check HDFS web interface:
+http://localhost:50070/
+
+
+# some HDFS commands:
+bin/hdfs dfs -mkdir /user
+bin/hdfs dfs -mkdir /user/csizsek
+hdfs dfs -ls /user/
+mkdir input
+cp etc/hadoop/*.xml input
+bin/hdfs dfs -put etc/hadoop input
+hdfs dfs -ls /user/csizsek
+bin/hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-2.6.0.jar grep input output 'dfs[a-z.]+'
+bin/hdfs dfs -get output output
+bin/hdfs dfs -cat output/*
+
+
+# compile and run example code:
+hadoop com.sun.tools.javac.Main WordCount.java
+jar cf wc.jar WordCount*.class
+hadoop jar wc.jar WordCount wordcount/input wordcount/output
+hadoop fs -ls /user/csizsek/wordcount/output
+hadoop fs -cat /user/csizsek/wordcount/output/part-r-00000
+
+
+# compile and run Cites.java example:
+hadoop fs -mkdir patent/cites/input
+hadoop fs -put cite75_99.txt patent/cites/input/
+hadoop fs -ls patent/cites/input/
+hadoop com.sun.tools.javac.Main Cites.java
+jar cf cites.jar Cites*.class
+hadoop jar cites.jar Cites patent/cites/input patent/cites/output
+hadoop fs -ls patent/cites/output
+hadoop fs -get patent/cites/output .
+
+
+# run a streaming job with unix commands:
+hadoop jar /Users/csizsek/tools/hadoop-2.6.0/share/hadoop/tools/lib/hadoop-streaming-2.6.0.jar -input patent/cites/input -output patent/cites/output2 -mapper 'cut -f 2 -d,' -reducer 'uniq'
+hadoop fs -get patent/cites/output2 .
+
+
+# run a streaming job with a python script
+hadoop jar /Users/csizsek/tools/hadoop-2.6.0/share/hadoop/tools/lib/hadoop-streaming-2.6.0.jar -input patent/apat/input -output patent/apat/output -file value_hist.py -mapper 'value_hist.py 1 4' -reducer aggregate

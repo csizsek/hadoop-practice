@@ -9,24 +9,6 @@ bin/hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.2.jar grep i
 cat output/*
 
 
-# example local etc/hadoop/core-site.xml:
-<configuration>
-    <property>
-        <name>fs.defaultFS</name>
-        <value>hdfs://localhost:9000</value>
-    </property>
-</configuration>
-
-
-# example etc/hadoop/hdfs-site.xml:
-<configuration>
-    <property>
-        <name>dfs.replication</name>
-        <value>1</value>
-    </property>
-</configuration>
-
-
 # format HDFS:
 bin/hdfs namenode -format
 
@@ -41,6 +23,22 @@ sbin/stop-dfs.sh
 
 # check HDFS web interface:
 http://localhost:50070/
+
+
+# start yarn:
+sbin/start-yarn.sh
+
+
+# stop yarn:
+sbin/stop-yarn.sh
+
+
+# yarn web interface:
+http://localhost:8088/
+
+
+# job tracker:
+http://localhost:8088
 
 
 # some HDFS commands:
@@ -82,3 +80,30 @@ hadoop fs -get patent/cites/output2 .
 
 # run a streaming job with a python script
 hadoop jar /Users/csizsek/tools/hadoop-2.6.0/share/hadoop/tools/lib/hadoop-streaming-2.6.0.jar -input patent/apat/input -output patent/apat/output -file value_hist.py -mapper 'value_hist.py 1 4' -reducer aggregate
+
+
+# list running processes
+jps
+
+
+# example jps output when everything is all right
+24355 NameNode
+24436 DataNode
+24644 ResourceManager
+24725 NodeManager
+24901 Jps
+24538 SecondaryNameNode
+
+
+# clean current data node
+rm -rf /private/tmp/hadoop-csizsek/dfs/data/current
+
+
+# run pig
+pig -x local
+pig -x mapreduce
+
+
+# pig commands
+set debug on
+set job.name 'majom'
